@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\User\CheckoutController;
+use App\Http\Controllers\HomeController;
+use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,16 +22,20 @@ Route::get('/', function () {
 })->name('home');
 
 
-Route::get('checkout', function () {
-    return view('checkout');
-})->name('checkout');
 
-Route::get('success-checkout', function () {
-    return view('success_checkout');
-})->name('success-checkout');
+Route::middleware(['auth'])->group(function(){
+    // checkout routes
+    Route::get('checkout/success',[CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('checkout/{camp:slug}',[CheckoutController::class, 'create'])->name('checkout.create');
+    Route::POST('checkout/store/{camp}',[CheckoutController::class, 'store'])->name('checkout.store');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+    // user dashboard
+    Route::get('dashboard',[HomeController::class, 'dashboard'])->name('dashboard');
+});
+
+// Socialite Routes
+
+Route::get('auth/redirect', [UserController::class, 'redirectToGoogle'])->name('user.login.google');
+Route::get('auth/google/callback', [UserController::class, 'handleGoogleCallback']);
 
 require __DIR__.'/auth.php';
